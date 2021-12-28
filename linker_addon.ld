@@ -1,6 +1,6 @@
 SECTIONS
 {
-    .ipc_array : ALIGN(8)
+    .ipc_array : ALIGN(4)
     {
         PROVIDE (__ipc_array_start = .);
         KEEP (*(.ipc_array))

@@ -20,16 +20,16 @@ typedef struct {
 typedef struct {
     int stat;
     size_t revc_sz;
-    size_t elapsed;
+    double elapsed;
 } report_t;
 
 struct ipc_ops {
-    int (*setup_p)(const testargs_t*);
-    int (*setup_c)(const testargs_t*);
-    int (*start_p)(const testargs_t*, report_t *report);
-    int (*start_c)(const testargs_t*);
-    int (*cleanup_p)(void);
-    int (*cleanup_c)(void);
+    int (*setup_p)(void **ctx, const testargs_t*);
+    int (*setup_c)(const void *ctx, const testargs_t*);
+    int (*revc_p)(const void *ctx, const testargs_t*, report_t *report);
+    int (*send_c)(const void *ctx, const testargs_t*);
+    int (*cleanup_p)(const void *ctx);
+    int (*cleanup_c)(const void *ctx);
 };
 
 typedef struct {
