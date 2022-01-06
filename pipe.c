@@ -13,23 +13,28 @@ struct pipe_ctx {
 
 static int pipe_setup_p(void **ctx, const testargs_t *args)
 {
-    *ctx = (struct pipe_ctx*)malloc(sizeof(struct pipe_ctx));
+    *ctx = malloc(sizeof(struct pipe_ctx));
+    struct pipe_ctx *pctx = (struct pipe_ctx *)*ctx;
 
-    int ret = pipe(((struct pipe_ctx*)*ctx)->fd);
+    int ret = pipe(pctx->fd);
     if (ret) {
         perror("pipe");
         return ret;
     }
 
-    ((struct pipe_ctx*)*ctx)->data = (char*)calloc(args->blksz, sizeof(char));
+    pctx->data = (char*)calloc(args->blksz, sizeof(char));
+
     return 0; 
 }
 
 static int pipe_setup_c(const void *ctx, const testargs_t *args)
 {
     struct pipe_ctx *pctx = (struct pipe_ctx*)ctx;
+    
     pctx->data = (char*)calloc(args->blksz, sizeof(char));
     memset(pctx->data, args->pattern, args->blksz);
+    close(pctx->fd[0]); // close read end
+
     return 0;
 }
 
@@ -72,8 +77,10 @@ static int pipe_cleanup_p(const void *ctx)
 {
     struct pipe_ctx *pctx = (struct pipe_ctx*)ctx;
 
-    free(pctx->data);
     close(pctx->fd[0]);
+    close(pctx->fd[1]);
+    free(pctx->data);
+    free(pctx);
 
     return 0;
 }
@@ -82,8 +89,9 @@ static int pipe_cleanup_c(const void *ctx)
 {
     struct pipe_ctx *pctx = (struct pipe_ctx*)ctx;
 
-    free(pctx->data);
     close(pctx->fd[1]);
+    free(pctx->data);
+    free(pctx);
     
     return 0;
 }
