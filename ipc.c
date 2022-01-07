@@ -31,6 +31,7 @@ int ipc_execute(const ipc_t* ipc, const testargs_t* args, report_t *report)
     int ret;
 
     report->stat = -1;
+    report->ipc = ipc;
 
     ret = ipc->parent_ops->setup(&ctx, args);
     if (ret) {
@@ -114,7 +115,7 @@ int ipc_get(int id, ipc_t **ipc)
     return -1;
 }
 
-void ipc_for_each(int(*cb)(ipc_t*))
+void ipc_for_each(int(*cb)(ipc_t*, int))
 {
     int n = ipc_get_arr_offs();
     int i = 0;
@@ -122,5 +123,5 @@ void ipc_for_each(int(*cb)(ipc_t*))
 
     do {
         p = &__ipc_array_start + (i++)*n;
-    } while (p < &__ipc_array_end && !cb(p));
+    } while ((uintptr_t)p < (uintptr_t)&__ipc_array_end && !cb(p, i - 1));
 }
