@@ -15,7 +15,7 @@
         .enabled = true, \
         .name = #NAME, \
         .parent_ops = PARENT_OPS, \
-        .child_ops = CHILD_OPS \
+        .child_ops = CHILD_OPS, \
     };
 
 /**
@@ -38,6 +38,11 @@ typedef struct {
     double elapsed;
 } report_t;
 
+/**
+ * @brief IPC facility operation
+ * 
+ * Both parent and child process has their own operations
+ */
 struct ipc_ops {
     int (*setup)(void **ctx, const testargs_t*);
     int (*send)(const void *ctx, const testargs_t*);
@@ -64,6 +69,29 @@ typedef struct {
  * @param report Output report
  * @return int 
  */
-int execute(const ipc_t* ipc, const testargs_t* args, report_t *report);
+int ipc_execute(const ipc_t* ipc, const testargs_t* args, report_t *report);
+
+/**
+ * @brief Returns the number of implemented IPC facilities
+ * 
+ * @return Number of implemented IPC
+ */
+int ipc_count();
+
+/**
+ * @brief Get IPC instance
+ * 
+ * @param id ID of IPC in the array
+ * @param ipc Output pointer
+ * @return Returns 0 on sucess, -1 on failure
+ */
+int ipc_get(int id, ipc_t **ipc);
+
+/**
+ * @brief Traversal all IPC facilities
+ * 
+ * @param cb Handler to process each IPC instance
+ */
+void ipc_for_each(int(*cb)(ipc_t*));
 
 #endif // __IPC_H__

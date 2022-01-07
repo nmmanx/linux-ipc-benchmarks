@@ -1,11 +1,31 @@
 #include <unistd.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <sys/time.h>
 #include <sys/wait.h>
 
 #include "ipc.h"
 
-int execute(const ipc_t* ipc, const testargs_t* args, report_t *report)
+#define IPC_ENTRY_ALIGNMENT     32
+
+extern void *__ipc_array_start;
+extern void *__ipc_array_end;
+
+static int ipc_get_arr_offs()
+{
+    int offs;
+
+    if (sizeof(ipc_t) % IPC_ENTRY_ALIGNMENT != 0) {
+        offs = (sizeof(ipc_t) + IPC_ENTRY_ALIGNMENT) / IPC_ENTRY_ALIGNMENT;
+        offs *= IPC_ENTRY_ALIGNMENT;
+    } else {
+        offs = sizeof(ipc_t);
+    }
+
+    return offs / sizeof(void*);
+}
+
+int ipc_execute(const ipc_t* ipc, const testargs_t* args, report_t *report)
 {
     void *ctx;
     int ret;
@@ -67,4 +87,40 @@ int execute(const ipc_t* ipc, const testargs_t* args, report_t *report)
     }
 
     return 0;
+}
+
+int ipc_count()
+{
+    uintptr_t start = (uintptr_t)&__ipc_array_start;
+    uintptr_t end = (uintptr_t)&__ipc_array_end; 
+
+    if (end % IPC_ENTRY_ALIGNMENT == 0) {
+        return (end - start) / IPC_ENTRY_ALIGNMENT;
+    } else {
+        return (end - start) / IPC_ENTRY_ALIGNMENT + 1;
+    }
+}
+
+int ipc_get(int id, ipc_t **ipc)
+{
+    int sz = ipc_count();
+    int offs = ipc_get_arr_offs();
+
+    if (id >= 0 && id < sz) {
+        *ipc = (ipc_t*)(&__ipc_array_start + id * offs);
+        return 0;
+    }
+
+    return -1;
+}
+
+void ipc_for_each(int(*cb)(ipc_t*))
+{
+    int n = ipc_get_arr_offs();
+    int i = 0;
+    void *p = &__ipc_array_start;
+
+    do {
+        p = &__ipc_array_start + (i++)*n;
+    } while (p < &__ipc_array_end && !cb(p));
 }
