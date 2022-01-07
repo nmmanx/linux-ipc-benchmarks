@@ -2,7 +2,8 @@ CC := gcc
 
 SRCS := ./ipc.c \
 	    ./main.c \
-	    ./pipe.c
+	    ./pipe.c \
+		./fifo.c \
 
 OBJS := $(patsubst %.c, %.o, $(SRCS))
 

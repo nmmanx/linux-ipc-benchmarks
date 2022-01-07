@@ -1,0 +1,47 @@
+#include "ipc.h"
+
+static int xxx_setup_p(void **ctx, const testargs_t *args)
+{
+    return 0; 
+}
+
+static int xxx_revc_p(const void *ctx, const testargs_t *args, report_t *report)
+{
+    return 0;
+}
+
+static int xxx_cleanup_p(const void *ctx)
+{
+    return 0;
+}
+
+static int xxx_setup_c(void **ctx, const testargs_t *args)
+{
+    return 0;
+}
+
+static int xxx_send_c(const void *ctx, const testargs_t *args)
+{
+    return 0;
+}
+
+static int xxx_cleanup_c(const void *ctx)
+{
+    return 0;
+}
+
+static struct ipc_ops xxx_ipc_ops_p = {
+    .setup = xxx_setup_p,
+    .send = NULL,
+    .revc = xxx_revc_p,
+    .clean = xxx_cleanup_p,
+};
+
+static struct ipc_ops xxx_ipc_ops_c = {
+    .setup = xxx_setup_c,
+    .send = xxx_send_c,
+    .revc = NULL,
+    .clean = xxx_cleanup_c,
+};
+
+NEW_IPC_BENCHMARK(xxx_ipc, &xxx_ipc_ops_p, &xxx_ipc_ops_c)

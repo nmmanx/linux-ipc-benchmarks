@@ -45,8 +45,9 @@ int ipc_execute(const ipc_t* ipc, const testargs_t* args, report_t *report)
     }
 
     if (pid == 0) {
+        // TODO: child process should signal parent when error occured
         size_t n = 0;
-        if (ipc->child_ops->setup(ctx, args) < 0) {
+        if (ipc->child_ops->setup(&ctx, args) < 0) {
             _exit(1);
         }
         while (n < args->numBlks) {

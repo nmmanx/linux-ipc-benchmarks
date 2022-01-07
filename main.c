@@ -49,9 +49,9 @@ int enabled_ipc(ipc_t *ipc, int id)
 
 static int report_comparator(const report_t *rp1, const report_t *rp2)
 {
-    if (rp1->elapsed < rp2->elapsed) {
+    if (rp1->elapsed > rp2->elapsed) {
         return 1;
-    } else if (rp1->elapsed > rp2->elapsed) {
+    } else if (rp1->elapsed < rp2->elapsed) {
         return -1;
     }
     return 0;
@@ -64,7 +64,7 @@ void print_reports(report_t *reports, int sz)
 
     for (int i = 0; i < sz; ++i) {
         double bw = reports[i].revc_sz / (1024 * 1024) / (reports[i].elapsed / 1000);
-        printf("%d.\t%s\t%f(ms)\t%f(MB/s)\n", i + 1, reports[i].ipc->name, reports[i].elapsed, bw);
+        printf("%d.\t%s\t%f (ms)\t%f (MB/s)\n", i + 1, reports[i].ipc->name, reports[i].elapsed, bw);
     }
 }
 
@@ -152,11 +152,11 @@ int main(int argc, char *argv[])
 
     for (int i = 0; i < ipcCount; ++i) {
         ipc_t *ipc = NULL;
-        ipc_get(i, &ipc);
+        ret = ipc_get(i, &ipc);
 
         if (ipc != NULL && ipc->enabled) {
             printf("Execute: %s...\n", ipc->name);
-            ret = ipc_execute(ipc, &args, reports + i++);
+            ret = ipc_execute(ipc, &args, reports + i);
             if (ret < 0) {
                 fprintf(stderr, "Error occured while executing %s\n", ipc->name);
                 _exit(EXIT_FAILURE);

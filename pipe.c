@@ -59,7 +59,7 @@ static int pipe_cleanup_p(const void *ctx)
 
 static int pipe_setup_c(void **ctx, const testargs_t *args)
 {
-    struct pipe_ctx *pctx = (struct pipe_ctx*)ctx;
+    struct pipe_ctx *pctx = (struct pipe_ctx*)*ctx;
     
     pctx->data = (char*)calloc(args->blkSz, sizeof(char));
     memset(pctx->data, args->pattern, args->blkSz);
