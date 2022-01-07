@@ -22,20 +22,9 @@ static int pipe_setup_p(void **ctx, const testargs_t *args)
         return ret;
     }
 
-    pctx->data = (char*)calloc(args->blksz, sizeof(char));
+    pctx->data = (char*)calloc(args->blkSz, sizeof(char));
 
     return 0; 
-}
-
-static int pipe_setup_c(const void *ctx, const testargs_t *args)
-{
-    struct pipe_ctx *pctx = (struct pipe_ctx*)ctx;
-    
-    pctx->data = (char*)calloc(args->blksz, sizeof(char));
-    memset(pctx->data, args->pattern, args->blksz);
-    close(pctx->fd[0]); // close read end
-
-    return 0;
 }
 
 static int pipe_revc_p(const void *ctx, const testargs_t *args, report_t *report)
@@ -43,8 +32,8 @@ static int pipe_revc_p(const void *ctx, const testargs_t *args, report_t *report
     struct pipe_ctx *pctx = (struct pipe_ctx*)ctx;
     size_t nr = 0;
     
-    while (nr < args->blksz) {
-        ssize_t ret = read(pctx->fd[0], pctx->data, args->blksz);
+    while (nr < args->blkSz) {
+        ssize_t ret = read(pctx->fd[0], pctx->data, args->blkSz);
         if (ret < 0) {
             perror("read");
             return -1;
@@ -52,24 +41,7 @@ static int pipe_revc_p(const void *ctx, const testargs_t *args, report_t *report
         nr += ret;
     }
 
-    report->revc_sz += args->blksz;
-    return 0;
-}
-
-static int pipe_send_c(const void *ctx, const testargs_t *args)
-{
-    struct pipe_ctx *pctx = (struct pipe_ctx*)ctx;
-    size_t nw = 0;
-
-    while (nw < args->blksz) {
-        ssize_t ret = write(pctx->fd[1], pctx->data, args->blksz);
-        if (ret < 0) {
-            perror("write");
-            return -1;
-        }
-        nw += ret;
-    }
-
+    report->revc_sz += args->blkSz;
     return 0;
 }
 
@@ -85,6 +57,34 @@ static int pipe_cleanup_p(const void *ctx)
     return 0;
 }
 
+static int pipe_setup_c(void **ctx, const testargs_t *args)
+{
+    struct pipe_ctx *pctx = (struct pipe_ctx*)ctx;
+    
+    pctx->data = (char*)calloc(args->blkSz, sizeof(char));
+    memset(pctx->data, args->pattern, args->blkSz);
+    close(pctx->fd[0]); // close unused read end
+
+    return 0;
+}
+
+static int pipe_send_c(const void *ctx, const testargs_t *args)
+{
+    struct pipe_ctx *pctx = (struct pipe_ctx*)ctx;
+    size_t nw = 0;
+
+    while (nw < args->blkSz) {
+        ssize_t ret = write(pctx->fd[1], pctx->data, args->blkSz);
+        if (ret < 0) {
+            perror("write");
+            return -1;
+        }
+        nw += ret;
+    }
+
+    return 0;
+}
+
 static int pipe_cleanup_c(const void *ctx)
 {
     struct pipe_ctx *pctx = (struct pipe_ctx*)ctx;
@@ -96,13 +96,18 @@ static int pipe_cleanup_c(const void *ctx)
     return 0;
 }
 
-static struct ipc_ops pipe_ipc_ops = {
-    .setup_p = pipe_setup_p,
-    .setup_c = pipe_setup_c,
-    .revc_p = pipe_revc_p,
-    .send_c = pipe_send_c,
-    .cleanup_p = pipe_cleanup_p,
-    .cleanup_c = pipe_cleanup_c
+static struct ipc_ops pipe_ipc_ops_p = {
+    .setup = pipe_setup_p,
+    .send = NULL,
+    .revc = pipe_revc_p,
+    .clean = pipe_cleanup_p,
 };
 
-IPC_BENCHMARK(pipe_ipc, &pipe_ipc_ops)
+static struct ipc_ops pipe_ipc_ops_c = {
+    .setup = pipe_setup_c,
+    .send = pipe_send_c,
+    .revc = NULL,
+    .clean = pipe_cleanup_c,
+};
+
+NEW_IPC_BENCHMARK(pipe_ipc, &pipe_ipc_ops_p, &pipe_ipc_ops_c)

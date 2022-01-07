@@ -12,7 +12,7 @@ int execute(const ipc_t* ipc, const testargs_t* args, report_t *report)
 
     report->stat = -1;
 
-    ret = ipc->ops->setup_p(&ctx, args);
+    ret = ipc->parent_ops->setup(&ctx, args);
     if (ret) {
         return ret;
     }
@@ -25,16 +25,16 @@ int execute(const ipc_t* ipc, const testargs_t* args, report_t *report)
 
     if (pid == 0) {
         size_t n = 0;
-        if (ipc->ops->setup_c(ctx, args) < 0) {
+        if (ipc->child_ops->setup(ctx, args) < 0) {
             _exit(1);
         }
-        while (n < args->nblks) {
-            if (ipc->ops->send_c(ctx, args) < 0) {
+        while (n < args->numBlks) {
+            if (ipc->child_ops->send(ctx, args) < 0) {
                 _exit(1);
             }
             n++;
         }
-        ipc->ops->cleanup_c(ctx);
+        ipc->child_ops->clean(ctx);
         _exit(0);
     } else {
         struct timeval t1;
@@ -44,8 +44,8 @@ int execute(const ipc_t* ipc, const testargs_t* args, report_t *report)
         report->revc_sz = 0;
 
         gettimeofday(&t1, NULL);
-        while (n < args->nblks) {
-            if (ipc->ops->revc_p(ctx, args, report) < 0) {
+        while (n < args->numBlks) {
+            if (ipc->parent_ops->revc(ctx, args, report) < 0) {
                 return -1;
             }
             n++;
@@ -53,9 +53,9 @@ int execute(const ipc_t* ipc, const testargs_t* args, report_t *report)
         gettimeofday(&t2, NULL);
 
         wait(NULL); // TODO: check child status
-        ipc->ops->cleanup_p(ctx);
+        ipc->parent_ops->clean(ctx);
 
-        if (report->revc_sz != (args->blksz * args->nblks)) {
+        if (report->revc_sz != (args->blkSz * args->numBlks)) {
             report->stat = -1;
             printf("Failure tranmission\n");
             return -1;
