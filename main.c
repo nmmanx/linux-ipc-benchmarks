@@ -17,12 +17,21 @@ static int print_ipc(ipc_t *ipc, int id)
 
 void print_help()
 {
-    // TODO: add help messages
-    static const char *msg = "" \
-        "" \
-        "";
+    static const char *fmt = "" \
+        "Usage: ./ipcbm [OPTION]...\n" \
+        "Run benchmarks for many IPC facilities.\n" \
+        "\n" \
+        "OPTION:\n" \
+        "  -l\tList all supported IPC facilities\n" \
+        "  -s\tSelect a list of IPC facilities to run, e.g. \"0,1,2\", run all by default\n" \
+        "  -b\tSpecify block size (message size), default is %d bytes\n" \
+        "  -n\tSpecify number of blocks, default is %d blocks\n" \
+        "  -h\tPrint this help message\n" \
+        "\n" \
+        "EXAMPLE:\n" \
+        "\t./ipcbm -s 0,1,2,3,4,5 -b 4096 -n 5000\n";
 
-    puts(msg);
+    printf(fmt, DEFAULT_BLOCK_SIZE, DEFAULT_BLOCK_NUM);
 }
 
 void print_ipc_list()
@@ -72,7 +81,6 @@ int main(int argc, char *argv[])
 {
     int opt;
     const int ipcCount = ipc_count();
-    bool verbose = false; // TODO: verbose mode
     size_t blkSz =DEFAULT_BLOCK_SIZE;
     size_t numBlks = DEFAULT_BLOCK_NUM;
     int enabled_cout = 0;
@@ -82,9 +90,6 @@ int main(int argc, char *argv[])
     while ((opt = getopt(argc, argv, "vhls:b:n:")) != -1) {
         switch (opt)
         {
-        case 'v': /* Verbose mode */
-            verbose = true;
-            break;
         case 'h': /* Print help message */
             print_help();
             _exit(EXIT_SUCCESS);

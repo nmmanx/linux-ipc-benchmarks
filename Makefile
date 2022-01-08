@@ -1,3 +1,4 @@
+TARGET := ipcbm
 CC := gcc
 
 SRCS := ./ipc.c \
@@ -7,8 +8,10 @@ SRCS := ./ipc.c \
 
 OBJS := $(patsubst %.c, %.o, $(SRCS))
 
-all: $(OBJS)
-	$(CC) $(OBJS) -T./linker_addon.ld -o out
+all: $(TARGET)
+
+$(TARGET): $(OBJS)
+	$(CC) $(OBJS) -T./linker_addon.ld -o $@
 
 %.o: %.c
 	$(CC) -c -I./ $< -o $@
@@ -16,4 +19,4 @@ all: $(OBJS)
 .PHONY: clean
 
 clean:
-	rm $(OBJS)
+	rm -f $(OBJS) $(TARGET)
