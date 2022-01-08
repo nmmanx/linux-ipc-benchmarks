@@ -2,9 +2,9 @@ TARGET := ipcbm
 CC := gcc
 
 SRCS := ./ipc.c \
-	    ./main.c \
-	    ./pipe.c \
-		./fifo.c \
+	    ./main.c
+
+include ./impl/build.mk
 
 OBJS := $(patsubst %.c, %.o, $(SRCS))
 
