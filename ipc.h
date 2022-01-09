@@ -57,6 +57,7 @@ typedef struct {
  */
 struct ipc_ops {
     int (*setup)(void **ctx, const testargs_t*);
+    int (*start)(const void *ctx, const testargs_t*);
     int (*send)(const void *ctx, const testargs_t*);
     int (*revc)(const void *ctx, const testargs_t*, report_t *report);
     int (*clean)(const void *ctx);

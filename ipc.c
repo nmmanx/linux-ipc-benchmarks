@@ -50,6 +50,9 @@ int ipc_execute(const ipc_t* ipc, const testargs_t* args, report_t *report)
         if (ipc->child_ops->setup(&ctx, args) < 0) {
             _exit(1);
         }
+        if (ipc->child_ops->start && ipc->child_ops->start(&ctx, args) < 0) {
+            _exit(1);
+        }
         while (n < args->numBlks) {
             if (ipc->child_ops->send(ctx, args) < 0) {
                 _exit(1);
@@ -64,6 +67,10 @@ int ipc_execute(const ipc_t* ipc, const testargs_t* args, report_t *report)
         int stat;
         size_t n = 0;
         report->revc_sz = 0;
+
+        if (ipc->parent_ops->start && ipc->parent_ops->start(ctx, args) < 0) {
+            return -1;
+        }
 
         gettimeofday(&t1, NULL);
         while (n < args->numBlks) {

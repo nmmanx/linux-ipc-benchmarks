@@ -98,6 +98,7 @@ static int pipe_cleanup_c(const void *ctx)
 
 static struct ipc_ops pipe_ipc_ops_p = {
     .setup = pipe_setup_p,
+    .start = NULL,
     .send = NULL,
     .revc = pipe_revc_p,
     .clean = pipe_cleanup_p,
@@ -105,6 +106,7 @@ static struct ipc_ops pipe_ipc_ops_p = {
 
 static struct ipc_ops pipe_ipc_ops_c = {
     .setup = pipe_setup_c,
+    .start = NULL,
     .send = pipe_send_c,
     .revc = NULL,
     .clean = pipe_cleanup_c,

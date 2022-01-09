@@ -125,6 +125,7 @@ static int fifo_cleanup_c(const void *ctx)
 
 static struct ipc_ops fifo_ipc_ops_p = {
     .setup = fifo_setup_p,
+    .start = NULL,
     .send = NULL,
     .revc = fifo_revc_p,
     .clean = fifo_cleanup_p,
@@ -132,6 +133,7 @@ static struct ipc_ops fifo_ipc_ops_p = {
 
 static struct ipc_ops fifo_ipc_ops_c = {
     .setup = fifo_setup_c,
+    .start = NULL,
     .send = fifo_send_c,
     .revc = NULL,
     .clean = fifo_cleanup_c,
